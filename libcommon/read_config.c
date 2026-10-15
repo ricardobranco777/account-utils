@@ -164,7 +164,7 @@ lookup_uid_list(econf_file *key_file, const char *group, uid_t **list)
   return ECONF_SUCCESS;
 }
 
-/* we will read everything and only report the firstx error */
+/* we will read everything and only report the first error */
 econf_err
 read_config(const char *name, struct config_t *cfg)
 {
