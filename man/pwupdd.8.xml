@@ -9,14 +9,14 @@
 
   <refnamediv>
     <refname>pwupdd</refname>
-    <refname>pwupdd.service</refname>
+    <refname>pwupdd@.service</refname>
     <refname>pwupdd.socket</refname>
     <refpurpose>update passwd and shadow entries</refpurpose>
   </refnamediv>
 
   <refsynopsisdiv>
     <cmdsynopsis>
-      <command>pwupdd.service</command>
+      <command>pwupdd@.service</command>
     </cmdsynopsis>
     <cmdsynopsis>
       <command>pwupdd.socket</command>
