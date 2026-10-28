@@ -819,9 +819,13 @@ vl_method_chsh(sd_varlink *link, sd_json_variant *parameters,
 				SD_JSON_BUILD_PAIR_STRING("ErrorMsg", stroom(msg)));
     }
   if (msg) /* ignore if it fails or not */
-    sd_varlink_replybo(link,
-		       SD_JSON_BUILD_PAIR_INTEGER("msg_style", PAM_TEXT_INFO),
-		       SD_JSON_BUILD_PAIR_STRING("message", msg));
+    {
+      /* This is only a notification, a reply would end the call. */
+      sd_varlink_notifybo(link,
+			  SD_JSON_BUILD_PAIR_INTEGER("msg_style", PAM_TEXT_INFO),
+			  SD_JSON_BUILD_PAIR_STRING("message", msg));
+      sd_varlink_flush(link);
+    }
 
   /* Run under the UID of the caller, else pam_unix will not ask for
      old password and pam_rootok will wrongly match. */
