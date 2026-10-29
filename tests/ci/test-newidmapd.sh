@@ -397,6 +397,13 @@ test_newuidmap_bad_args() {
     rc=0
     container_exec newuidmap 1 0 0 >/dev/null 2>&1 || rc=$?
     assert_failure $rc "newuidmap with incomplete triple exits non-zero"
+
+    # Non-numeric value in a mapping triple (regression test for #32: used to
+    # crash with a NULL pointer dereference instead of reporting an error)
+    rc=0
+    container_exec newuidmap 1 abc 0 1 >/dev/null 2>&1 || rc=$?
+    assert_failure $rc "newuidmap with non-numeric mapping value exits non-zero"
+    assert_not_equals $rc 139 "newuidmap with non-numeric mapping value does not crash (SIGSEGV)"
 }
 
 # ---------------------------------------------------------------------------
