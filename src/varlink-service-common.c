@@ -151,6 +151,27 @@ vl_method_get_environment(sd_varlink *link, sd_json_variant *parameters,
 #endif
 }
 
+/* Build the "<interface>.InternalError" domain for the interface the
+   current call came in on, since this method is shared between daemons
+   that each declare their own InternalError. Falls back to pwaccess's
+   if the interface can't be determined. */
+static int
+vl_method_quit_internal_error(sd_varlink *link)
+{
+  _cleanup_free_ char *error_domain = NULL;
+  const char *method = NULL;
+  const char *dot;
+
+  if (sd_varlink_get_current_method(link, &method) >= 0 && method &&
+      (dot = strrchr(method, '.')) != NULL &&
+      asprintf(&error_domain, "%.*sInternalError", (int)(dot - method + 1), method) < 0)
+    error_domain = NULL;
+
+  return sd_varlink_errorbo(link,
+                            error_domain ? error_domain : "org.openSUSE.pwaccess.InternalError",
+                            SD_JSON_BUILD_PAIR_BOOLEAN("Success", false));
+}
+
 int
 vl_method_quit(sd_varlink *link, sd_json_variant *parameters,
 	       sd_varlink_method_flags_t _unused_(flags),
@@ -197,8 +218,7 @@ vl_method_quit(sd_varlink *link, sd_json_variant *parameters,
   if (loop == NULL)
     {
       log_msg(LOG_ERR, "Quit request: connection has no event loop");
-      return sd_varlink_errorbo(link, "org.openSUSE.pwaccess.InternalError",
-                                SD_JSON_BUILD_PAIR_BOOLEAN("Success", false));
+      return vl_method_quit_internal_error(link);
     }
 
   r = sd_event_exit(loop, exit_code);
@@ -206,8 +226,7 @@ vl_method_quit(sd_varlink *link, sd_json_variant *parameters,
     {
       log_msg(LOG_ERR, "Quit request: disabling event loop failed: %s",
 	      strerror(-r));
-      return sd_varlink_errorbo(link, "org.openSUSE.pwaccess.InternalError",
-                                SD_JSON_BUILD_PAIR_BOOLEAN("Success", false));
+      return vl_method_quit_internal_error(link);
     }
 
   return sd_varlink_replybo(link, SD_JSON_BUILD_PAIR_BOOLEAN("Success", true));
